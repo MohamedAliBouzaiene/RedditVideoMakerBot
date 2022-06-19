@@ -13,6 +13,9 @@ from TTS.swapper import TTS
 from utils.console import print_step, print_substep
 from utils.voice import sanitize_text
 
+# I added this library to cut mp3 files
+from pydub import AudioSegment
+
 console = Console()
 
 
@@ -26,6 +29,10 @@ def save_text_to_mp3(reddit_obj):
     """
     print_step("Saving Text to MP3 files...")
     length = 0
+
+    # configure audio segment
+    AudioSegment.converter = "venv/scripts/ffmpeg.exe"
+    AudioSegment.ffprobe = "venv/scripts/ffprobe.exe"
 
     # Create a folder for the mp3 files.
     Path("assets/temp/mp3").mkdir(parents=True, exist_ok=True)
@@ -51,6 +58,14 @@ def save_text_to_mp3(reddit_obj):
         # ! Stop creating mp3 files if the length is greater than VIDEO_LENGTH seconds. This can be longer
         # but this is just a good_voices starting point
         if length > VIDEO_LENGTH:
+            # cut the last clip in 2 halfs and save them
+            sound = AudioSegment.from_file(f"assets/temp/mp3/{com-1}.mp3")
+            startTime = sound.duration_seconds * 1000 / 2
+            endTime = sound.duration_seconds * 1000
+            firstHalf = sound[0:startTime]
+            secondHalf = sound[startTime:endTime]
+            firstHalf.export(f"assets/temp/mp3/{com-1}.mp3")
+            secondHalf.export(f"assets/temp/mp3/{com}.mp3")
             break
 
         TextToSpeech.tts(

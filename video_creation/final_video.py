@@ -42,6 +42,8 @@ def make_final_video(number_of_clips, length):
     for i in range(0, number_of_clips):
         audio_clips.append(AudioFileClip(f"assets/temp/mp3/{i}.mp3"))
     audio_clips.insert(0, AudioFileClip("assets/temp/mp3/title.mp3"))
+    # insert last clip before title
+    audio_clips.insert(0, AudioFileClip(f"assets/temp/mp3/{number_of_clips}.mp3"))
     audio_concat = concatenate_audioclips(audio_clips)
     audio_composite = CompositeAudioClip([audio_concat])
 
@@ -59,7 +61,7 @@ def make_final_video(number_of_clips, length):
         image_clips.insert(
             0,
             ImageClip("assets/temp/png/title.png")
-            .set_duration(audio_clips[0].duration)
+            .set_duration(audio_clips[1].duration)
             .set_position("center")
             .resize(width=W - 100),
         )
@@ -67,24 +69,34 @@ def make_final_video(number_of_clips, length):
         image_clips.insert(
             0,
             ImageClip("assets/temp/png/title.png")
-            .set_duration(audio_clips[0].duration)
+            .set_duration(audio_clips[1].duration)
             .set_position("center")
             .resize(width=W - 100)
             .set_opacity(float(opacity)),
         )
 
+    # add last comment to the start of the video
+    image_clips.insert(
+        0,
+        ImageClip(f"assets/temp/png/comment_{number_of_clips - 1}.png")
+        .set_duration(audio_clips[0].duration)
+        .set_position("center")
+        .resize(width=W - 100)
+        .set_opacity(float(opacity)),
+    )
+
     for i in range(0, number_of_clips):
         if opacity is None or float(opacity) >= 1:  # opacity not set or is set to one OR MORE
             image_clips.append(
                 ImageClip(f"assets/temp/png/comment_{i}.png")
-                .set_duration(audio_clips[i + 1].duration)
+                .set_duration(audio_clips[i + 2].duration) #we have the title and the last audio before every comment that's why +2
                 .set_position("center")
                 .resize(width=W - 100),
             )
         else:
             image_clips.append(
                 ImageClip(f"assets/temp/png/comment_{i}.png")
-                .set_duration(audio_clips[i + 1].duration)
+                .set_duration(audio_clips[i + 2].duration)
                 .set_position("center")
                 .resize(width=W - 100)
                 .set_opacity(float(opacity)),
